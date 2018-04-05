@@ -1,0 +1,128 @@
+/** General Styles **/
+.path-mod-glossarylv .glossarylvpost {
+    width: 95%;
+    border-collapse: separate;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.path-mod-glossarylv .glossarylvpost.entrylist {
+    border-width: 0;
+}
+
+.path-mod-glossarylv .glossarylvpost.continuous .concept {
+    display: inline;
+}
+
+.path-mod-glossarylv .glossarylvpost .commands {
+    width: 200px;
+    white-space: nowrap;
+}
+
+.path-mod-glossarylv .glossarylvpost td.picture {
+    width: 35px;
+}
+
+.path-mod-glossarylv .glossarylvpost .entrylowersection .icons {
+    text-align: right;
+    padding-right: 5px;
+}
+
+.path-mod-glossarylv .glossarylvpost .entrylowersection .ratings {
+    text-align: right;
+    padding-right: 5px;
+    padding-bottom: 2px;
+}
+
+.path-mod-glossarylv .glossarylvpost .glossarylv-hidden-note {
+    margin: 0 .45em;
+}
+
+.path-mod-glossarylv .glossarylvdisplay {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.path-mod-glossarylv .glossarylvdisplay .tabs {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.path-mod-glossarylv .glossarylvdisplay .tabs .side {
+    border-style: none;
+    border-width: 0;
+    width: auto;
+}
+
+.path-mod-glossarylv .glossarylvdisplay .separator {
+    width: 4px;
+}
+
+.path-mod-glossarylv table.glossarylvpopup {
+    width: 95%;
+}
+
+.path-mod-glossarylv .entrybox,
+.path-mod-glossarylv table.glossarylvapproval,
+.path-mod-glossarylv .glossarylvpost .entrylowersection table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.glossarylv-activity-picture {
+    float: left;
+}
+
+.glossarylv-activity-content {
+    margin-left: 40px;
+}
+
+/** Page specific styles **/
+#page-mod-glossarylv-view .glossarylvcontrol {
+    float: right;
+    text-align: right;
+    white-space: nowrap;
+    margin: 5px 0;
+}
+
+#page-mod-glossarylv-view table.glossarylvcategoryheader,
+#page-mod-glossarylv-import table.glossarylvimportexport {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#page-mod-glossarylv-view table.glossarylvcategoryheader {
+    margin-bottom: 0;
+}
+
+#page-mod-glossarylv-view table.glossarylvcategoryheader th {
+    padding: 0;
+}
+
+#page-mod-glossarylv-view td.glossarylvsearchbox label {
+    display: inline-block;
+}
+
+#page-mod-glossarylv-showentry #page-content {
+    min-width: 600px;
+}
+
+#page-mod-glossarylv-print .mod-glossarylv-entrylist .mod-glossarylv-entry {
+    vertical-align: top;
+}
+
+#page-mod-glossarylv-print .displayprinticon,
+#page-mod-glossarylv-print .displaydate {
+    text-align: right;
+    font-size: 0.75em;
+}
+
+#page-mod-glossarylv-print .strong {
+    font-weight: bold;
+}
+
+.path-mod-glossarylv .printicon {
+    background: url([[pix:t/print]]) no-repeat scroll 2px center transparent;
+    /*rtl:ignore*/
+    padding-left: 20px;
+}
