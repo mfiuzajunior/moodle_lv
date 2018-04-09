@@ -6,6 +6,10 @@ require_once("lib.php");
 require_once($CFG->libdir . '/completionlib.php');
 require_once("$CFG->libdir/rsslib.php");
 
+// @lvs Classes LVs
+use uab\ifce\lvs\business\Item;
+// ---
+
 $id = optional_param('id', 0, PARAM_INT);           // Course Module ID
 $g  = optional_param('g', 0, PARAM_INT);            // Glossarylv ID
 
@@ -457,8 +461,15 @@ if ($allentries) {
         $allentries = $rm->get_ratings($ratingoptions);
     }
 
-    foreach ($allentries as $entry) {
-
+   foreach ($allentries as $entry) {
+        // @lvs Adiciona um Item LV na entrada atual
+        $wrappedItem = new stdClass();
+        $wrappedItem->id = $entry->id;
+        $wrappedItem->userid = $entry->userid;
+        $wrappedItem->created = $entry->created;
+        $entry->itemlv = new Item('glossariolv', 'entry', $wrappedItem);
+        // ----
+ 
         // Setting the pivot for the current entry
         if ($printpivot) {
             $pivot = $entry->{$pivotkey};

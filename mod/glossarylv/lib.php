@@ -49,6 +49,16 @@ define('GLOSSARYLV_CONTINUOUS', 'continuous');
 define('GLOSSARYLV_DICTIONARY', 'dictionary');
 define('GLOSSARYLV_FULLWITHOUTAUTHOR', 'fullwithoutauthor');
 
+// @lvs Classes LVs
+use uab\ifce\lvs\business\Item;
+use uab\ifce\lvs\avaliacao\NotasLvFactory;
+use uab\ifce\lvs\moodle2\business\GlossarioLv;
+use uab\ifce\lvs\moodle2\business\Moodle2CursoLv;
+
+// Loader dos LVs
+require_once($CFG->dirroot.'/blocks/lvs/biblioteca/lib.php');
+//---
+
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
 /**
  * @global object
@@ -1351,6 +1361,17 @@ function glossarylv_print_entry_icons($course, $cm, $glossarylv, $entry, $mode='
  * @return void
  */
 function  glossarylv_print_entry_lower_section($course, $cm, $glossarylv, $entry, $mode, $hook, $printicons, $aliases=true) {
+    // @lvs imprime avaliação da entrada.
+    if(isset($entry->itemlv)){
+	$gerenciadorDeNotas = NotasLvFactory::criarGerenciador('moodle2');
+	$gerenciadorDeNotas->setModulo(new GlossarioLv($glossarylv->id));
+	echo html_writer::tag( 'div',
+                               $gerenciadorDeNotas->avaliacaoAtual($entry->itemlv).
+                               $gerenciadorDeNotas->avaliadoPor($entry->itemlv).
+                               $gerenciadorDeNotas->formAvaliacaoAjax($entry->itemlv),
+			       array('class'=>'glossariolv-entry-rating'));
+    }
+    // ----
     if ($aliases) {
         $aliases = glossarylv_print_entry_aliases($course, $cm, $glossarylv, $entry, $mode, $hook,'html');
     }

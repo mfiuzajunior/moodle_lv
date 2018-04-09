@@ -1,3 +1,21 @@
+/* Estrutura das entradas do glossário LV */
+
+.glossariolventry {display: block;position:relative;margin:0 0 1em 0;padding:0;border:1px solid #000;max-width:50%;}
+.glossariolventry .row {width:100%;position:relative;}
+.glossariolventry .row .left {float:left;width: 43px;overflow:hidden;}
+.glossariolventry .row .left .grouppictures a {text-align:center;display:block;margin:6px 2px 0 2px;}
+.glossariolventry .row .left .grouppicture {width:20px;height:20px;}
+.glossariolventry .row .topic,
+.glossariolventry .row .content-mask,
+.glossariolventry .row .options {margin-left:43px;}
+.glossariolventry .picture img {margin:4px;}
+.glossariolventry .options .commands,
+.glossariolventry .content .attachments,
+.glossariolventry .options .footer,
+.glossariolventry .options .link {text-align:right;}
+.glossariolventry .options .glossariolv-entry-rating {float:left;}
+
+
 /** General Styles **/
 .path-mod-glossarylv .glossarylvpost {
     width: 95%;
