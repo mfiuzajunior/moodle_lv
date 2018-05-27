@@ -13,6 +13,7 @@ use uab\ifce\lvs\forms\FormsAvaliacaoImpl;
 use uab\ifce\lvs\moodle2\business\Moodle2CursoLv;
 use uab\ifce\lvs\moodle2\business\Forumlv;
 use uab\ifce\lvs\moodle2\business\Wikilv;
+use uab\ifce\lvs\moodle2\business\GlossarioLv;
 use uab\ifce\lvs\util\Cache;
 
 /**
@@ -124,6 +125,10 @@ class Moodle2NotasLv implements NotasLv {
 		
 		if ( $nome == 'wikilv' )
 			return new Wikilv($id);
+
+		if ( $nome == 'glossarylv' )
+			return new GlossarioLv($id);
+
 		
 		throw new \Exception();
 	}

@@ -218,8 +218,6 @@ class Forumlv extends AtividadeLv {
 	 * 	@todo recuperar apenas posts avaliados dentro do prazo definido
 	 */
 	private function _avaliarDesempenho( $estudante ) {
-
-
 		global $DB;
 		$cm = get_coursemodule_from_instance('forumlv', $this->_forumlv->id);
 		$posts = $posts_avaliados = array();

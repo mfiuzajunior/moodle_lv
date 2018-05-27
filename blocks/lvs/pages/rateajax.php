@@ -5,6 +5,7 @@
 * 	@author Ricky Persivo (rickypaz@gmail.com)
 * 	@version SVN $Id
 */
+
 require_once('../../../config.php');
 require_once($CFG->dirroot . '/group/lib.php');
 require_once($CFG->dirroot . '/mod/wikilv/locallib.php');
@@ -15,6 +16,7 @@ use uab\ifce\lvs\avaliacao\NotasLvFactory;
 use uab\ifce\lvs\business\Item;
 use uab\ifce\lvs\moodle2\business\Moodle2CursoLv;
 use uab\ifce\lvs\util\Cache;
+use uab\ifce\lvs\util\ChromePhp;
 
 $contextid 	= required_param('contextid', PARAM_INT);
 $cacheid 	= required_param('cacheid', PARAM_ALPHANUM);
@@ -35,8 +37,7 @@ if (!confirm_sesskey() || !has_capability('moodle/rating:rate',$context)) {
 }
 
 $gerenciador = NotasLvFactory::criarGerenciador('moodle2');
-
-$atividadelv = $gerenciador->criarAtividadeLv($cm->modname, $cm->instance); 
+$atividadelv = $gerenciador->criarAtividadeLv($cm->modname, $cm->instance);
 $cache 		 = new Cache('cachelvs.xml');
 $cursolv	 = new Moodle2CursoLv($cm->course);
 $avaliacao   = new AvaliacaoLv();
@@ -48,7 +49,6 @@ $avaliacao->setAvaliador($USER->id);
 $avaliacao->setEstudante($estudante);
 $avaliacao->setNota($nota);
 $avaliacao->setItem($itemAvaliado);
-
 
 if (isset($nota)) {
 	$gerenciador->salvarAvaliacao($avaliacao);
