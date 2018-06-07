@@ -467,7 +467,7 @@ if ($allentries) {
         $wrappedItem->id = $entry->id;
         $wrappedItem->userid = $entry->userid;
         $wrappedItem->created = $entry->created;
-        $entry->itemlv = new Item('glossariolv', 'entry', $wrappedItem);
+        $entry->itemlv = new Item('glossarylv', 'entry', $wrappedItem);
         // ----
  
         // Setting the pivot for the current entry
