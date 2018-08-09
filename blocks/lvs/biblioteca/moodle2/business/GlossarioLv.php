@@ -101,6 +101,7 @@ class GlossarioLv extends AtividadeLv {
     }
 
     public function removerAvaliacao( $avaliacao ){}
+
     public function salvarAvaliacao( AvaliacaoLv $avaliacao ){
         global $DB;
         $avaliacao->setNota( intval($avaliacao->getNota()) );
@@ -131,6 +132,57 @@ class GlossarioLv extends AtividadeLv {
         
         $this->_avaliarDesempenho($avaliacao->getEstudante());
     }
-    private function _avaliarDesempenho( $estudante ){}
+    private function _avaliarDesempenho( $estudante ){
+        global $DB;
+        $cm = get_coursemodule_from_instance('glossarylv', $this->_glossariolv->id);
+        $entradas = $entradas_avaliadas = array();
+
+        $discussions = forumlv_get_discussions($cm);
+
+        $discussion = reset($discussions);
+
+        $entradas = $DB->get_records('forumlv_posts', array('discussion'=>$discussion->discussion, 'userid'=>$estudante), 'created ASC', 'id');
+        
+        if ( !empty($entradas) ) {
+            list($mask, $params) = $DB->get_in_or_equal(array_keys($entradas));
+            $entradas_avaliadas = $DB->get_records_select($this->_tabelaNota, "component='mod_glossarylv' AND ratingarea='entry' AND itemid $mask", $params, 'itemid');
+        }
+
+        $desempenho_atual = $DB->get_record($this->_tabelaAvaliacao, array(
+                'id_curso' => $this->_forumlv->cursoava,
+                'id_forumlv'=> $this->_forumlv->id,
+                'id_usuario' => $estudante
+        ));
+
+        if ( empty($entradas_avaliadas) && !empty($desempenho_atual) ) {
+            $DB->delete_records($this->_tabelaAvaliacao, array('id'=>$desempenho_atual->id));
+            return 0;
+        } else {
+            list($I, $carinhas) = $this->_calcularVariacaoAngular($entradas_avaliadas);
+    
+            $novo_desempenho = new \stdClass();
+            $novo_desempenho->numero_carinhas_azul = $carinhas['azul'];
+            $novo_desempenho->numero_carinhas_verde = $carinhas['verde'];
+            $novo_desempenho->numero_carinhas_amarela = $carinhas['amarela'];
+            $novo_desempenho->numero_carinhas_laranja = $carinhas['laranja'];
+            $novo_desempenho->numero_carinhas_vermelha = $carinhas['vermelha'];
+            $novo_desempenho->numero_carinhas_preta = $carinhas['preta'];
+            $novo_desempenho->modulo_vetor = $this->calcularModuloVetor($I);
+
+            $novo_desempenho->beta = $this->calcularBeta($novo_desempenho->modulo_vetor, $carinhas);
+            
+            if (empty($desempenho_atual)) {
+                $novo_desempenho->id_curso = $this->_forumlv->cursoava;
+                $novo_desempenho->id_forumlv = $this->_forumlv->id;
+                $novo_desempenho->id_usuario = $estudante;
+                $DB->insert_record($this->_tabelaAvaliacao, $novo_desempenho);
+            } else {
+                $novo_desempenho->id = $desempenho_atual->id;
+                $DB->update_record($this->_tabelaAvaliacao, $novo_desempenho);
+            }
+        }
+        
+        return $novo_desempenho->modulo_vetor;
+    }
 }
 ?>

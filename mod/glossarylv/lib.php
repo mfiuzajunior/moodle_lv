@@ -1297,6 +1297,7 @@ function glossarylv_print_entry_icons($course, $cm, $glossarylv, $entry, $mode='
             $return .= "<font size=\"-1\">" . get_string("exportedentry","glossarylv") . "</font>";
         }
     }
+
     if (!empty($CFG->enableportfolios) && (has_capability('mod/glossarylv:exportentry', $context) || ($iscurrentuser && has_capability('mod/glossarylv:exportownentry', $context)))) {
         require_once($CFG->libdir . '/portfoliolib.php');
         $button = new portfolio_add_button();
@@ -1328,7 +1329,7 @@ function glossarylv_print_entry_icons($course, $cm, $glossarylv, $entry, $mode='
         $cmt->context  = $context;
         $cmt->course   = $course;
         $cmt->cm       = $cm;
-        $cmt->area     = 'glossary_entrylv';
+        $cmt->area     = 'glossarylv_entry';
         $cmt->itemid   = $entry->id;
         $cmt->showcount = true;
         $comment = new comment($cmt);
@@ -3220,6 +3221,7 @@ function glossarylv_comment_permissions($comment_param) {
  * @return boolean
  */
 function glossarylv_comment_validate($comment_param) {
+
     global $DB;
     // validate comment area
     if ($comment_param->commentarea != 'glossarylv_entry') {
