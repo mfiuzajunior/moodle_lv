@@ -91,7 +91,10 @@ class GlossariosLv extends GerenciadorAtividadesDistancia {
 	 * 	@access public
 	 */
 	public function recuperarAtividades( ) {
-		return new \stdClass();
+		global $DB;
+		$curso_id = $this->_cursolv->getConfiguracao()->id_curso;
+		
+		return $DB->get_records('glossarylv', array('course'=>$curso_id));
 	}
 
 	/**
@@ -130,7 +133,14 @@ class GlossariosLv extends GerenciadorAtividadesDistancia {
 	 * 	@see uab\ifce\lvs\business.GerenciadorAtividadesDistancia::recuperarDesempenhoPorAtividade()
 	 */
 	public function recuperarDesempenhoPorAtividade( $estudante ) {
-		return new \stdClass();
+		global $DB;
+		$atividades = $this->recuperarAtividades();
+
+		foreach ($atividades as $atividade) {
+			$atividade->avaliacaolv = $DB->get_record('lvs_glossariolv', array('id_glossariolv'=>$atividade->id, 'id_usuario'=>$estudante));
+		}
+		
+		return $atividades;
 	}
 	
 	/**

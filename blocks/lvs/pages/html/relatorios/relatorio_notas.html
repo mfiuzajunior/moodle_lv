@@ -42,6 +42,7 @@
 				<td class="center" style="width: 5%;" title="Nota nos Wikis">NW</td>
 				<!-- <td class="center" style="width: 4%;" title="Ausência de Atividades Wiki">AAW</td>  -->
 				<td class="center" style="width: 5%;" title="Nota nos Quizzes">NQ</td>
+				<td class="center" style="width: 5%;" title="Nota nos Glossários">NG</td>
 				<!-- <td class="center" style="width: 4%;" title="Ausência de Atividades Quiz">AAQ</td> -->
 				<td class="center" style="width: 5%;" title="Nota Distância">ND</td>
 				<td class="center" style="width: 5%;" title="Nota Presencial">NP</td>
@@ -71,7 +72,7 @@
 				<td class="center" style="border: 1px solid">{NOTA_DISTANCIA}</td>
 
 				<!-- BEGIN ATIVIDADE_PRESENCIAL -->
-				<td class="center" style="border: 1px solid">{NOTA_ATIVIDADE} 
+				<td class="center" style="border: 1px solid">{NOTA_ATIVIDADE}
 					<a target='{TARGET_ATIVIDADE}' href='relatorio_presenciais.php?curso={CURSO_ID}&usuario={ESTUDANTE_ID}'> 
 						<img src='{BASE_URL}/imgs/view.png' />
 					</a>
@@ -134,6 +135,7 @@
 					&nbsp;&nbsp;&nbsp;&nbsp;NT - Nota TarefaLV <br />
 					&nbsp;&nbsp;&nbsp;&nbsp;NC - Nota ChatLV <br />
 					&nbsp;&nbsp;&nbsp;&nbsp;NQ - Nota QuizLV <br />
+					&nbsp;&nbsp;&nbsp;&nbsp;NQ - Nota GlossárioLV <br />
 				    &nbsp;&nbsp;&nbsp;&nbsp;NW - Nota WikiLV <br />
 				    &nbsp;&nbsp;&nbsp;&nbsp;ND - Nota Dist&acirc;ncia <br />
 				    &nbsp;&nbsp;&nbsp;&nbsp;NP - Nota Presencial <br /><br /> 
@@ -149,7 +151,8 @@
 					&nbsp;&nbsp;&nbsp;&nbsp;AAF - Aus&ecirc;ncia Atividade F&oacute;rum <br />
 					&nbsp;&nbsp;&nbsp;&nbsp;AAC - Aus&ecirc;ncia Atividade Quiz <br />
 					&nbsp;&nbsp;&nbsp;&nbsp;AAT - Aus&ecirc;ncia Atividade Tarefa <br />
-					&nbsp;&nbsp;&nbsp;&nbsp;AAW - Aus&ecirc;ncia Atividade Wiki <br /><br />
+					&nbsp;&nbsp;&nbsp;&nbsp;AAW - Aus&ecirc;ncia Atividade Wiki <br />
+					&nbsp;&nbsp;&nbsp;&nbsp;AAG - Aus&ecirc;ncia Atividade Glossário <br /><br />
 				<b>- Situa&ccedil;&atilde;o</b> <br />
 						&nbsp;&nbsp;&nbsp;&nbsp;C - Cursando <br />
 						&nbsp;&nbsp;&nbsp;&nbsp;AM - Aprovado por M&eacute;dia (M&eacute;dia &gt;= {MEDIA_CURSO}) <br />
