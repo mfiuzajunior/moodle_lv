@@ -1,9 +1,11 @@
 <?php
 namespace uab\ifce\lvs\moodle2\business;
 
+use uab\ifce\lvs\EscalaLikert;
 use uab\ifce\lvs\business\AtividadeLv;
 use uab\ifce\lvs\business\Item;
 use uab\ifce\lvs\avaliacao\AvaliacaoLv;
+use uab\ifce\lvs\util\ChromePhp;
 
 /**
  * Avalia o desempenho no GlossárioLV
@@ -88,7 +90,9 @@ class GlossarioLv extends AtividadeLv {
     }
 
     public function getNota( $estudante ){
-    	return 0.0;
+        global $DB;
+        
+        return $DB->get_field($this->_tabelaAvaliacao, 'modulo_vetor', array('id_glossariolv'=>$this->_glossariolv->id, 'id_usuario'=>$estudante));
     }
 
     public function podeAvaliar( Item $item ){
@@ -100,7 +104,22 @@ class GlossarioLv extends AtividadeLv {
 	   return true;
     }
 
-    public function removerAvaliacao( $avaliacao ){}
+    public function removerAvaliacao( $avaliacao ){
+        global $DB;
+        $item = $avaliacao->getItem();
+        
+        $avaliacao_atual = $DB->get_record($this->_tabelaNota, array(
+                'component'  => 'mod_'.$item->getAtividade(),
+                'ratingarea' => $item->getComponente(),
+                'itemid'     => $item->getItem()->id
+        ));
+        
+        if($avaliacao_atual) {
+            $DB->delete_records($this->_tabelaNota, array('id'=>$avaliacao_atual->id));
+        }
+        
+        $this->_avaliarDesempenho($avaliacao->getEstudante());
+    }
 
     public function salvarAvaliacao( AvaliacaoLv $avaliacao ){
         global $DB;
@@ -129,32 +148,30 @@ class GlossarioLv extends AtividadeLv {
             $nova_avaliacao->timemodified = time();
             $DB->update_record($this->_tabelaNota, $nova_avaliacao);
         }
-        
+
         $this->_avaliarDesempenho($avaliacao->getEstudante());
     }
+
     private function _avaliarDesempenho( $estudante ){
         global $DB;
-        $cm = get_coursemodule_from_instance('glossarylv', $this->_glossariolv->id);
-        $entradas = $entradas_avaliadas = array();
 
-        $discussions = forumlv_get_discussions($cm);
+        $entradas_do_estudante = $entradas_avaliadas = array();
 
-        $discussion = reset($discussions);
+        $entradas_do_estudante = $DB->get_records('glossarylv_entries', array('glossarylvid'=>$this->_glossariolv->id,'userid'=>$estudante), 'timecreated ASC', 'id');
 
-        $entradas = $DB->get_records('forumlv_posts', array('discussion'=>$discussion->discussion, 'userid'=>$estudante), 'created ASC', 'id');
-        
-        if ( !empty($entradas) ) {
-            list($mask, $params) = $DB->get_in_or_equal(array_keys($entradas));
+        if ( !empty($entradas_do_estudante) ) {
+            list($mask, $params) = $DB->get_in_or_equal(array_keys($entradas_do_estudante));
             $entradas_avaliadas = $DB->get_records_select($this->_tabelaNota, "component='mod_glossarylv' AND ratingarea='entry' AND itemid $mask", $params, 'itemid');
         }
 
         $desempenho_atual = $DB->get_record($this->_tabelaAvaliacao, array(
-                'id_curso' => $this->_forumlv->cursoava,
-                'id_forumlv'=> $this->_forumlv->id,
+                'id_curso' => $this->_glossariolv->cursoava,
+                'id_glossariolv'=> $this->_glossariolv->id,
                 'id_usuario' => $estudante
         ));
 
         if ( empty($entradas_avaliadas) && !empty($desempenho_atual) ) {
+            ChromePhp::log("oops");
             $DB->delete_records($this->_tabelaAvaliacao, array('id'=>$desempenho_atual->id));
             return 0;
         } else {
@@ -172,8 +189,8 @@ class GlossarioLv extends AtividadeLv {
             $novo_desempenho->beta = $this->calcularBeta($novo_desempenho->modulo_vetor, $carinhas);
             
             if (empty($desempenho_atual)) {
-                $novo_desempenho->id_curso = $this->_forumlv->cursoava;
-                $novo_desempenho->id_forumlv = $this->_forumlv->id;
+                $novo_desempenho->id_curso = $this->_glossariolv->cursoava;
+                $novo_desempenho->id_glossariolv = $this->_glossariolv->id;
                 $novo_desempenho->id_usuario = $estudante;
                 $DB->insert_record($this->_tabelaAvaliacao, $novo_desempenho);
             } else {
@@ -181,8 +198,53 @@ class GlossarioLv extends AtividadeLv {
                 $DB->update_record($this->_tabelaAvaliacao, $novo_desempenho);
             }
         }
-        
         return $novo_desempenho->modulo_vetor;
+    }
+
+    /**
+     *  Calcula a variação angular por meio das notas obtidas nas avaliações
+     *
+     *  @param array:\stdClass $avaliacoes
+     *  @return array [ variacao_angular: int, carinhas: array ]
+     *  @access private
+     */
+    private function _calcularVariacaoAngular($avaliacoes) {
+        $I = 0;
+        $postagem = 1;
+        $m = $this->_glossariolv->fator_multiplicativo / 2;
+        $carinhas = array('azul'=>0, 'verde'=>0, 'amarela'=>0, 'laranja'=>0, 'vermelha'=>0, 'preta'=>0);
+
+        foreach ($avaliacoes as $avaliacao) {
+            $coeficiente_passo = $avaliacao->rating;
+
+            switch($coeficiente_passo) {
+                case EscalaLikert::MUITO_BOM:
+                    $carinhas['azul']++; break;
+                case EscalaLikert::BOM:
+                    $carinhas['verde']++; break;
+                case EscalaLikert::REGULAR:
+                    $carinhas['amarela']++; break;
+                case EscalaLikert::FRACO:
+                    $carinhas['laranja']++; break;
+                case EscalaLikert::NAO_SATISFATORIO:
+                    $carinhas['vermelha']++; break;
+                case EscalaLikert::NEUTRO:
+                    $carinhas['preta']++;
+            }
+  
+            if ($coeficiente_passo != EscalaLikert::NEUTRO) {
+                if ($postagem == 1 || $postagem == 2) { // Primeira Postagem ou Segunda Postagem
+                    $I += ($m * $coeficiente_passo) * AtividadeLv::ALFA;
+                } else {
+                    $I += ($coeficiente_passo < 2) ? -AtividadeLv::ALFA : AtividadeLv::ALFA;
+                } 
+                $postagem++;
+            }
+        }
+
+        $I = $this->limitarAoQuadrante($I);
+
+        return array($I, $carinhas);
     }
 }
 ?>
