@@ -23,6 +23,9 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+use uab\ifce\lvs\avaliacao\NotasLvFactory;
+use uab\ifce\lvs\moodle2\business\GlossarioLv;
+
 /**
  * Comment is helper class to add/delete comments anywhere in moodle
  *
@@ -227,8 +230,24 @@ class comment {
         $this->template .= html_writer::tag('span', '___time___', array('class' => 'time'));
 
         $this->template .= html_writer::end_tag('div'); // .comment-message-meta
-        $this->template .= html_writer::tag('div', '___content___', array('class' => 'text'));
 
+        // @lvs imprime avaliação do comentário.
+        if(isset($options->itemlv)){
+            $this->template .= html_writer::start_tag('div', array('class' => 'text')); // ___content___
+            $gerenciadorDeNotas = NotasLvFactory::criarGerenciador('moodle2');
+            $gerenciadorDeNotas->setModulo(new GlossarioLv($options->glossarylvid));
+            $this->template .= print_r($options->itemlv, true);
+/*            $this->template .= 'fiuza';/*html_writer::tag(    'div',
+                                                    $gerenciadorDeNotas->avaliacaoAtual($options->itemlv).
+                                                    $gerenciadorDeNotas->avaliadoPor($options->itemlv).
+                                                    $gerenciadorDeNotas->formAvaliacaoAjax($options->itemlv),
+                                                    array('class'=>'glossariolv-entry-rating')); */
+            $this->template .= html_writer::end_tag('div'); // ___content___
+        } else {
+            $this->template .= 'isn\'set';
+            $this->template .= html_writer::tag('div', '___content___', array('class' => 'text'));
+        }
+        // ----
         $this->template .= html_writer::end_tag('div'); // .comment-message
 
         if (!empty($this->plugintype)) {

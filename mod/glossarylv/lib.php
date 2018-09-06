@@ -1332,6 +1332,10 @@ function glossarylv_print_entry_icons($course, $cm, $glossarylv, $entry, $mode='
         $cmt->area     = 'glossarylv_entry';
         $cmt->itemid   = $entry->id;
         $cmt->showcount = true;
+        // @lvs guardar referência ao itemlv dentro do comentário
+        $cmt->itemlv = $entry->itemlv;
+        $cmt->glossarylvid = $glossarylv->id;
+        // ----
         $comment = new comment($cmt);
         $return .= '<div>'.$comment->output(true).'</div>';
         $output = true;
@@ -1364,13 +1368,13 @@ function glossarylv_print_entry_icons($course, $cm, $glossarylv, $entry, $mode='
 function  glossarylv_print_entry_lower_section($course, $cm, $glossarylv, $entry, $mode, $hook, $printicons, $aliases=true) {
     // @lvs imprime avaliação da entrada.
     if(isset($entry->itemlv)){
-	$gerenciadorDeNotas = NotasLvFactory::criarGerenciador('moodle2');
-	$gerenciadorDeNotas->setModulo(new GlossarioLv($glossarylv->id));
-	echo html_writer::tag( 'div',
-                               $gerenciadorDeNotas->avaliacaoAtual($entry->itemlv).
-                               $gerenciadorDeNotas->avaliadoPor($entry->itemlv).
-                               $gerenciadorDeNotas->formAvaliacaoAjax($entry->itemlv),
-			       array('class'=>'glossariolv-entry-rating'));
+        $gerenciadorDeNotas = NotasLvFactory::criarGerenciador('moodle2');
+        $gerenciadorDeNotas->setModulo(new GlossarioLv($glossarylv->id));
+        echo html_writer::tag(  'div',
+                                $gerenciadorDeNotas->avaliacaoAtual($entry->itemlv).
+                                $gerenciadorDeNotas->avaliadoPor($entry->itemlv).
+                                $gerenciadorDeNotas->formAvaliacaoAjax($entry->itemlv),
+                                array('class'=>'glossariolv-entry-rating'));
     }
     // ----
     if ($aliases) {
