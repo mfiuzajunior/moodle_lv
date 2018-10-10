@@ -1332,10 +1332,6 @@ function glossarylv_print_entry_icons($course, $cm, $glossarylv, $entry, $mode='
         $cmt->area     = 'glossarylv_entry';
         $cmt->itemid   = $entry->id;
         $cmt->showcount = true;
-        // @lvs guardar referência ao itemlv dentro do comentário
-        $cmt->itemlv = $entry->itemlv;
-        $cmt->glossarylvid = $glossarylv->id;
-        // ----
         $comment = new comment($cmt);
         $return .= '<div>'.$comment->output(true).'</div>';
         $output = true;

@@ -23,8 +23,11 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
+// @lvs Classes LVs
+use uab\ifce\lvs\business\Item;
 use uab\ifce\lvs\avaliacao\NotasLvFactory;
 use uab\ifce\lvs\moodle2\business\GlossarioLv;
+use uab\ifce\lvs\moodle2\business\Moodle2CursoLv;
 
 /**
  * Comment is helper class to add/delete comments anywhere in moodle
@@ -122,6 +125,10 @@ class comment {
     public function __construct(stdClass $options) {
         $this->viewcap = false;
         $this->postcap = false;
+
+        // @lvs ---
+        $options->autostart = true;
+        // --------
 
         // setup client_id
         if (!empty($options->client_id)) {
@@ -230,24 +237,8 @@ class comment {
         $this->template .= html_writer::tag('span', '___time___', array('class' => 'time'));
 
         $this->template .= html_writer::end_tag('div'); // .comment-message-meta
+        $this->template .= html_writer::tag('div', '___content___', array('class' => 'text'));
 
-        // @lvs imprime avaliação do comentário.
-        if(isset($options->itemlv)){
-            $this->template .= html_writer::start_tag('div', array('class' => 'text')); // ___content___
-            $gerenciadorDeNotas = NotasLvFactory::criarGerenciador('moodle2');
-            $gerenciadorDeNotas->setModulo(new GlossarioLv($options->glossarylvid));
-            $this->template .= print_r($options->itemlv, true);
-/*            $this->template .= 'fiuza';/*html_writer::tag(    'div',
-                                                    $gerenciadorDeNotas->avaliacaoAtual($options->itemlv).
-                                                    $gerenciadorDeNotas->avaliadoPor($options->itemlv).
-                                                    $gerenciadorDeNotas->formAvaliacaoAjax($options->itemlv),
-                                                    array('class'=>'glossariolv-entry-rating')); */
-            $this->template .= html_writer::end_tag('div'); // ___content___
-        } else {
-            $this->template .= 'isn\'set';
-            $this->template .= html_writer::tag('div', '___content___', array('class' => 'text'));
-        }
-        // ----
         $this->template .= html_writer::end_tag('div'); // .comment-message
 
         if (!empty($this->plugintype)) {
@@ -858,7 +849,7 @@ class comment {
      * @return string|void
      */
     public function print_comments($page = 0, $return = true, $nonjs = true) {
-        global $DB, $CFG, $PAGE;
+        global $DB, $CFG, $PAGE, $USER;
 
         if (!$this->can_view()) {
             return '';
@@ -871,9 +862,18 @@ class comment {
         )) {
             $page = 0;
         }
+
         $comments = $this->get_comments($page);
 
         $html = '';
+
+        // @lvs ---
+        if( !empty($comments) ){
+            $gerenciadorDeNotas = NotasLvFactory::criarGerenciador('moodle2');
+            $gerenciadorDeNotas->setModulo(new GlossarioLv($this->cm->instance)); // $this->cm->instance guarda o id do glossáriolv
+        }
+        // --------
+
         if ($nonjs) {
             $html .= html_writer::tag('h3', get_string('comments'));
             $html .= html_writer::start_tag('ul', array('id' => 'comment-list-'.$this->cid, 'class' => 'comment-list'));
@@ -881,6 +881,7 @@ class comment {
         // Reverse the comments array to display them in the correct direction
         foreach (array_reverse($comments) as $cmt) {
             $html .= html_writer::tag('li', $this->print_comment($cmt, $nonjs), array('id' => 'comment-'.$cmt->id.'-'.$this->cid));
+            $html .= html_writer::tag('div', $gerenciadorDeNotas->avaliacaoAtual(new Item('glossarylv', 'comment', $comentario)));
         }
         if ($nonjs) {
             $html .= html_writer::end_tag('ul');
