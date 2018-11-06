@@ -323,6 +323,10 @@ class Moodle2NotasLv implements NotasLv {
 	public function setModulo(AtividadeLv $modulo) {
 		$this->_modulo = $modulo;
 	}
+
+	public function getModulo() {
+		return $this->_modulo;
+	}
 	
 	private function _addJs($ajaxForm=false) {
 		global $PAGE;

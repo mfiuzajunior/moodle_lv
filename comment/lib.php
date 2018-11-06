@@ -851,6 +851,11 @@ class comment {
     public function print_comments($page = 0, $return = true, $nonjs = true) {
         global $DB, $CFG, $PAGE, $USER;
 
+        // @lvs ---
+        $gerenciadorDeNotas = NotasLvFactory::criarGerenciador('moodle3');
+        $gerenciadorDeNotas->setModulo(new GlossarioLv($this->cm->instance)); // $this->cm->instance guarda o id do glossáriolv
+        // ----
+
         if (!$this->can_view()) {
             return '';
         }
@@ -867,21 +872,27 @@ class comment {
 
         $html = '';
 
-        // @lvs ---
-        if( !empty($comments) ){
-            $gerenciadorDeNotas = NotasLvFactory::criarGerenciador('moodle2');
-            $gerenciadorDeNotas->setModulo(new GlossarioLv($this->cm->instance)); // $this->cm->instance guarda o id do glossáriolv
-        }
-        // --------
-
         if ($nonjs) {
             $html .= html_writer::tag('h3', get_string('comments'));
             $html .= html_writer::start_tag('ul', array('id' => 'comment-list-'.$this->cid, 'class' => 'comment-list'));
         }
         // Reverse the comments array to display them in the correct direction
         foreach (array_reverse($comments) as $cmt) {
+            // @lvs --- Configura o itemLV do comentário
+            $comentarioLV = new stdClass();
+            $comentarioLV->id = $cmt->id;
+            $comentarioLV->userid = $cmt->userid;
+            $comentarioLV->created = $cmt->timecreated;
+            $cmt->itemlv = new Item('glossarylv', 'comment', $comentarioLV);
+            // ----
             $html .= html_writer::tag('li', $this->print_comment($cmt, $nonjs), array('id' => 'comment-'.$cmt->id.'-'.$this->cid));
-            $html .= html_writer::tag('div', $gerenciadorDeNotas->avaliacaoAtual(new Item('glossarylv', 'comment', $comentario)));
+
+            // @lvs --- Imprime a avaliação atual
+            if( $this->component == 'mod_glossarylv' ){
+                $html .= html_writer::tag('div',    $gerenciadorDeNotas->avaliacaoAtual($cmt->itemlv).
+                                                    $gerenciadorDeNotas->formAvaliacaoAjax($cmt->itemlv));
+            }
+            // ----
         }
         if ($nonjs) {
             $html .= html_writer::end_tag('ul');
