@@ -881,6 +881,7 @@ class comment {
             // @lvs --- Configura o itemLV do comentário
             $comentarioLV = new stdClass();
             $comentarioLV->id = $cmt->id;
+            $comentarioLV->entryid = $this->itemid;
             $comentarioLV->userid = $cmt->userid;
             $comentarioLV->created = $cmt->timecreated;
             $cmt->itemlv = new Item('glossarylv', 'comment', $comentarioLV);

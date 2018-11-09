@@ -20,11 +20,17 @@ class AvaliarComentarioNotasLv extends Moodle2NotasLv {
 			return false;
 		}
 
-		// Verifica se o item a ser avaliado foi criado pelo usuário que deseja avaliá-lo
+		// O usuário não pode avaliar o próprio comentário. Verifica se o comentário a ser avaliado foi criado pelo usuário.
 		if ($contribuicao && $item->getItem()->userid == $USER->id) {
 			return false;
 		}
 
+		// O usuário só pode avaliar comentários feitos a sua entrada de glossário.
+		if($contribuicao && $item->getItem()->userid == $USER->id){
+
+		}
+
+		// Não pode avaliar comentários feitos por um professor/tutor
 		if( $this->comentarioDeProfessor( $context, $item->getItem()->userid ) ){
 			return false;
 		}
@@ -40,6 +46,31 @@ class AvaliarComentarioNotasLv extends Moodle2NotasLv {
 				}
 			}
 		}
+	}
+
+	/* 
+	 * @see uab\ifce\lvs\avaliacao.NotasLv::podeVerNota()
+	 */
+	public function podeVerNota( Item $item ) {
+		global $cm, $context, $USER;
+		$contribuicao = $this->getModulo()->contribuicao($item);
+
+		if(!isset($context)) 
+			$context = \context_module::instance($cm->id);
+
+		if(!has_capability("mod/$cm->modname:viewrating", $context))
+			return false;
+
+		// verifica se o item pertence ao usuário logado
+		if ($contribuicao && $item->getItem()->userid != $USER->id)
+			return false;
+
+		// Verifica se usuário logado tem permissão para avaliar. A permissão checada aqui normalmente é dada a professores. Logo, professores não podem ver as notas dos comentários.
+		if (has_capability("mod/$cm->modname:rate", $context)){
+			return false;
+		}
+
+		return $this->getModulo()->podeVerNota($item);
 	}
 }
 ?>
