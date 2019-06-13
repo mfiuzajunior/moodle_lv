@@ -176,7 +176,7 @@ class Moodle2NotasLv implements NotasLv {
 			$sesskey = sesskey();
 				
 			$returnurl = stripcslashes($_SERVER['REQUEST_URI']) ;
-				
+
 			if (!$avaliacao->isCarinhasEstendido())
 				$this->_formAvaliacao->likertAjax($avaliacao);
 			else

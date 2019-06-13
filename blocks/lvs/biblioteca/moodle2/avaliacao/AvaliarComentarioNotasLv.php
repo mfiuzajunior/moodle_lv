@@ -13,7 +13,14 @@ class AvaliarComentarioNotasLv extends Moodle2NotasLv {
 		//echo print_r($item, true);
 		global $USER, $cm, $context;
 
+		if (!$context) {
+			$context = \context_module::instance($cm->id);
+		}
+
 		$contribuicao = $this->getModulo()->contribuicao($item);
+		$avaliacao 	= $this->getAvaliacao($item);
+		$avaliador 	= $avaliacao->getAvaliador();
+		$nota 		= $avaliacao->getNota();
 
 		// Verifica se usuário logado tem permissão para avaliar. A permissão checada aqui normalmente é dada a professores. Logo, professores não podem avaliar comentários.
 		if (has_capability("mod/$cm->modname:rate", $context)){
@@ -25,17 +32,16 @@ class AvaliarComentarioNotasLv extends Moodle2NotasLv {
 			return false;
 		}
 
-		// O usuário só pode avaliar comentários feitos a sua entrada de glossário.
-		if($contribuicao && $item->getItem()->userid == $USER->id){
-
+		// verifica se o item a ser avaliado já foi avaliado por outro usuário
+		if (!empty($nota) && $avaliador != $USER->id) {
+			return false;
 		}
 
 		// Não pode avaliar comentários feitos por um professor/tutor
 		if( $this->comentarioDeProfessor( $context, $item->getItem()->userid ) ){
 			return false;
 		}
-
-		return true;
+		return $this->getModulo()->podeAvaliar($item);
 	}
 
 	private function comentarioDeProfessor( $context, $userid ){

@@ -1370,7 +1370,7 @@ function  glossarylv_print_entry_lower_section($course, $cm, $glossarylv, $entry
                                 $gerenciadorDeNotas->avaliacaoAtual($entry->itemlv).
                                 $gerenciadorDeNotas->avaliadoPor($entry->itemlv).
                                 $gerenciadorDeNotas->formAvaliacaoAjax($entry->itemlv),
-                                array('class'=>'glossariolv-entry-rating'));
+                                array('class'=>'forumlv-post-rating'));
     }
     // ----
     if ($aliases) {

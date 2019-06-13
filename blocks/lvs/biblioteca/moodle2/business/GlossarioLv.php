@@ -133,7 +133,7 @@ class GlossarioLv extends AtividadeLv {
         $nova_avaliacao->itemid     = $avaliacao->getItem()->getItem()->id;
         $nova_avaliacao->userid     = $avaliacao->getAvaliador();
         $nova_avaliacao->rating     = $avaliacao->getNota();
-        
+
         $avaliacao_atual = $DB->get_record($this->_tabelaNota, array(
                 'component'  => $nova_avaliacao->component,
                 'ratingarea' => $nova_avaliacao->ratingarea,
@@ -152,12 +152,16 @@ class GlossarioLv extends AtividadeLv {
         $this->_avaliarDesempenho($avaliacao->getEstudante());
     }
 
+    private function buscarEntradasNesseGlossario( $estudante ){
+        return $DB->get_records('glossarylv_entries', array('glossarylvid'=>$this->_glossariolv->id,'userid'=>$estudante), 'timecreated ASC', 'id');
+    }
+
     private function _avaliarDesempenho( $estudante ){
         global $DB;
 
         $entradas_do_estudante = $entradas_avaliadas = array();
 
-        $entradas_do_estudante = $DB->get_records('glossarylv_entries', array('glossarylvid'=>$this->_glossariolv->id,'userid'=>$estudante), 'timecreated ASC', 'id');
+        $entradas_do_estudante = buscarEntradasNesseGlossario( $estudante );
 
         if ( !empty($entradas_do_estudante) ) {
             list($mask, $params) = $DB->get_in_or_equal(array_keys($entradas_do_estudante));

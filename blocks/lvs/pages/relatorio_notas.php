@@ -52,7 +52,6 @@ if ($tipo == 'html') {
 		$estudante = $DB->get_record('user', array('id'=>$estudante));
 	}	
 	$estudantes = (is_int($estudante)) ? array() : array($estudante);
-	
 	echo $relatorio_notas->desempenhoParticipantes($estudantes);
 } else if ($tipo == 'pdf') {
 	ini_set("memory_limit","100M");
