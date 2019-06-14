@@ -194,7 +194,6 @@ class Moodle2NotasLv implements NotasLv {
 
 	public function podeAvaliar( Item $item ) {
 		global $USER, $cm, $context;
-
 		if (!$context) {
 			$context = \context_module::instance($cm->id);
 		}

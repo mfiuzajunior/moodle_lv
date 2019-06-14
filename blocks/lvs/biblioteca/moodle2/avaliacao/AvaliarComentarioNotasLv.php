@@ -10,9 +10,7 @@ use uab\ifce\lvs\util\ChromePhp;
 
 class AvaliarComentarioNotasLv extends Moodle2NotasLv {
 	public function podeAvaliar( Item $item ) {
-		//echo print_r($item, true);
 		global $USER, $cm, $context;
-
 		if (!$context) {
 			$context = \context_module::instance($cm->id);
 		}

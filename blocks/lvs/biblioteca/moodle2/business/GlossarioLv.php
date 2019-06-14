@@ -91,17 +91,32 @@ class GlossarioLv extends AtividadeLv {
 
     public function getNota( $estudante ){
         global $DB;
-        
         return $DB->get_field($this->_tabelaAvaliacao, 'modulo_vetor', array('id_glossariolv'=>$this->_glossariolv->id, 'id_usuario'=>$estudante));
     }
 
     public function podeAvaliar( Item $item ){
-	   return true;
+        $insercoes_avaliadas = $this->_buscarEntradasAvaliadas($item->getItem()->userid);
+        $comentarios_avaliados = $this->_buscarComentariosAvaliados($item->getItem()->userid);
+        if( $item->getComponente() == 'entry' ) { // Se quer avaliar uma inserção:
+            /*
+            * Verifica se existe avaliação de inserção anterior. Se não houver, pode avaliar. Se houver avaliação, só pode avaliar de novo depois que houver avaliação de
+            * ao menos um comentário.
+            */
+            return count($insercoes_avaliadas) == 0 ? true : count($comentarios_avaliados) > 0;
+        } else if( $item->getComponente() == 'comment' ) {// Se quer avaliar um comentário:
+            /*
+            * Verifica se existe avaliação de comentário anterior. Se não houver, pode avaliar. Se houver avaliação, só pode avaliar de novo depois que houver avaliação de
+            * ao menos uma inserção.
+            */
+            return count($comentarios_avaliados) == 0 ? true : count($insercoes_avaliadas) > 0;
+        }
+
+        return false;
     }
 
     public function podeVerNota( Item $item ){
-	   // TODO: Implementar função
-	   return true;
+        // TODO: Implementar função
+        return true;
     }
 
     public function removerAvaliacao( $avaliacao ){
@@ -124,7 +139,7 @@ class GlossarioLv extends AtividadeLv {
     public function salvarAvaliacao( AvaliacaoLv $avaliacao ){
         global $DB;
         $avaliacao->setNota( intval($avaliacao->getNota()) );
-        
+
         $nova_avaliacao = new \stdClass();
         $nova_avaliacao->contextid  = 0;
         $nova_avaliacao->scaleid    = 0;
@@ -139,7 +154,7 @@ class GlossarioLv extends AtividadeLv {
                 'ratingarea' => $nova_avaliacao->ratingarea,
                 'itemid'     => $nova_avaliacao->itemid
         ));
-        
+
         if(!$avaliacao_atual) {
             $nova_avaliacao->timecreated = $nova_avaliacao->timemodified = time();
             $DB->insert_record($this->_tabelaNota, $nova_avaliacao);
@@ -152,34 +167,70 @@ class GlossarioLv extends AtividadeLv {
         $this->_avaliarDesempenho($avaliacao->getEstudante());
     }
 
-    private function buscarEntradasNesseGlossario( $estudante ){
-        return $DB->get_records('glossarylv_entries', array('glossarylvid'=>$this->_glossariolv->id,'userid'=>$estudante), 'timecreated ASC', 'id');
+    private function _buscarEntradasNesseGlossario( $estudante ){
+        global $DB;
+        return $DB->get_records('glossarylv_entries', array('glossarylvid'=>$this->_glossariolv->id,'userid'=>$estudante), 'timecreated ASC', 'id');;
+    }
+
+    private function _buscarEntradasAvaliadas( $estudante ){
+        global $DB;
+        $entradas_do_estudante = $this->_buscarEntradasNesseGlossario( $estudante );
+        if ( !empty($entradas_do_estudante) ) {
+            list($mask, $params) = $DB->get_in_or_equal(array_keys($entradas_do_estudante));
+            return $DB->get_records_select($this->_tabelaNota, "component='mod_glossarylv' AND ratingarea='entry' AND itemid $mask", $params, 'itemid');
+        }
+    }
+
+    private function _buscarComentariosNesseGlossario( $estudante ){
+        global $DB;
+        $consulta = 'select
+                        comentarios.*
+                     from
+                        mdl_comments comentarios inner join
+                        mdl_glossarylv_entries insercoes on comentarios.itemid = insercoes.id
+                     where
+                        insercoes.glossarylvid = :id_glossariolv and
+                        comentarios.userid = :id_usuario
+                     order by timecreated ASC';
+        return $DB->get_records_sql($consulta, array('id_glossariolv'=>$this->_glossariolv->id, 'id_usuario'=>$estudante));
+    }
+
+    private function _buscarComentariosAvaliados( $estudante ){
+        global $DB;
+        $comentarios_do_estudante = $this->_buscarComentariosNesseGlossario( $estudante );
+        if ( !empty($comentarios_do_estudante) ) {
+            list($mask, $params) = $DB->get_in_or_equal(array_keys($comentarios_do_estudante));
+            return $DB->get_records_select($this->_tabelaNota, "component='mod_glossarylv' AND ratingarea='comment' AND itemid $mask", $params, 'id');
+        }
+    }
+
+    private function _comparaAvaliacoesPorDataDeCriacao( $avaliacao1, $avaliacao2 ){
+        return strcmp($avaliacao1->timecreated, $avaliacao2->timecreated);
+    }
+
+    private function _ordenarAvaliacoes( $avaliacoes ){
+        usort($avaliacoes, array($this,'_comparaAvaliacoesPorDataDeCriacao'));
     }
 
     private function _avaliarDesempenho( $estudante ){
         global $DB;
 
-        $entradas_do_estudante = $entradas_avaliadas = array();
+        $entradas_avaliadas = $this->_buscarEntradasAvaliadas( $estudante );
+        $comentarios_avaliados = $this->_buscarComentariosAvaliados( $estudante );
+        $avaliacoes = array_merge($entradas_avaliadas, $comentarios_avaliados);
 
-        $entradas_do_estudante = buscarEntradasNesseGlossario( $estudante );
-
-        if ( !empty($entradas_do_estudante) ) {
-            list($mask, $params) = $DB->get_in_or_equal(array_keys($entradas_do_estudante));
-            $entradas_avaliadas = $DB->get_records_select($this->_tabelaNota, "component='mod_glossarylv' AND ratingarea='entry' AND itemid $mask", $params, 'itemid');
-        }
-
+        $this->_ordenarAvaliacoes($avaliacoes);
         $desempenho_atual = $DB->get_record($this->_tabelaAvaliacao, array(
                 'id_curso' => $this->_glossariolv->cursoava,
                 'id_glossariolv'=> $this->_glossariolv->id,
                 'id_usuario' => $estudante
         ));
 
-        if ( empty($entradas_avaliadas) && !empty($desempenho_atual) ) {
-            ChromePhp::log("oops");
+        if ( empty($avaliacoes) && !empty($desempenho_atual) ) {
             $DB->delete_records($this->_tabelaAvaliacao, array('id'=>$desempenho_atual->id));
             return 0;
         } else {
-            list($I, $carinhas) = $this->_calcularVariacaoAngular($entradas_avaliadas);
+            list($I, $carinhas) = $this->_calcularVariacaoAngular($avaliacoes);
     
             $novo_desempenho = new \stdClass();
             $novo_desempenho->numero_carinhas_azul = $carinhas['azul'];
