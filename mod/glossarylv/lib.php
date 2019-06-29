@@ -87,6 +87,8 @@ function glossarylv_add_instance($glossarylv) {
 
     $glossarylv->timecreated  = time();
     $glossarylv->timemodified = $glossarylv->timecreated;
+    $glossarylv->fator_multiplicativo = 3;
+    $glossarylv->exibir = 1;
 
     //Check displayformat is a valid one
     $formats = get_list_of_plugins('mod/glossarylv/formats','TEMPLATE');
